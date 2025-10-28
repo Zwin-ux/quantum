@@ -1,10 +1,9 @@
 // Module 0: Noise Floor - Landing Scene
 
-import { WebGLRenderer, defaultVertexShader, noiseFragmentShader } from '../utils/webgl.js';
-
 export class NoiseFloor {
     constructor() {
         this.canvas = document.getElementById('noise-canvas');
+        this.ctx = this.canvas.getContext('2d');
         this.introText = document.getElementById('intro-text');
         this.typewriterContainer = document.getElementById('typewriter-container');
         this.typewriterText = document.getElementById('typewriter-text');
@@ -13,48 +12,19 @@ export class NoiseFloor {
         this.charIndex = 0;
         this.isActive = false;
 
-        this.renderer = null;
-        this.program = null;
+        this.particles = [];
+        this.gridLines = [];
+        this.mousePos = { x: 0.5, y: 0.5 };
+        this.time = 0;
         this.animationFrame = null;
     }
 
     init() {
-        console.log('NoiseFloor: Initializing...');
+        console.log('NoiseFloor: Initializing with Canvas 2D...');
 
         // Set canvas size to match viewport
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-
-        // Initialize WebGL
-        this.renderer = new WebGLRenderer(this.canvas);
-        if (!this.renderer || !this.renderer.gl) {
-            console.error('Failed to initialize WebGL');
-            return;
-        }
-
-        console.log('NoiseFloor: WebGL initialized');
-
-        // Create shader program
-        this.program = this.renderer.createProgram(defaultVertexShader, noiseFragmentShader);
-        if (!this.program) {
-            console.error('Failed to create shader program');
-            return;
-        }
-
-        console.log('NoiseFloor: Shader program created');
-
-        // Set up quad
-        this.renderer.setupQuad();
-
-        // Get uniform locations
-        this.uniforms = {
-            time: this.renderer.gl.getUniformLocation(this.program, 'u_time'),
-            resolution: this.renderer.gl.getUniformLocation(this.program, 'u_resolution'),
-            mouse: this.renderer.gl.getUniformLocation(this.program, 'u_mouse')
-        };
-
-        // Get attribute location
-        this.positionLocation = this.renderer.gl.getAttribLocation(this.program, 'position');
 
         // Set up mouse tracking
         this.setupMouseTracking();
@@ -63,20 +33,67 @@ export class NoiseFloor {
         window.addEventListener('resize', () => {
             this.canvas.width = window.innerWidth;
             this.canvas.height = window.innerHeight;
-            this.renderer.resize();
+            this.createParticles();
+            this.createGrid();
         });
 
-        // Resize canvas
-        this.renderer.resize();
+        // Create particles and grid
+        this.createParticles();
+        this.createGrid();
 
         console.log('NoiseFloor: Initialization complete');
+    }
+
+    createParticles() {
+        this.particles = [];
+        const particleCount = 150;
+
+        for (let i = 0; i < particleCount; i++) {
+            this.particles.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                size: Math.random() * 2 + 1,
+                color: Math.random() > 0.5 ? 'cyan' : 'orange',
+                alpha: Math.random() * 0.5 + 0.3,
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+    }
+
+    createGrid() {
+        this.gridLines = [];
+        const spacing = 40;
+
+        // Vertical lines
+        for (let x = 0; x < this.canvas.width; x += spacing) {
+            this.gridLines.push({
+                x1: x,
+                y1: 0,
+                x2: x,
+                y2: this.canvas.height,
+                vertical: true
+            });
+        }
+
+        // Horizontal lines
+        for (let y = 0; y < this.canvas.height; y += spacing) {
+            this.gridLines.push({
+                x1: 0,
+                y1: y,
+                x2: this.canvas.width,
+                y2: y,
+                vertical: false
+            });
+        }
     }
 
     setupMouseTracking() {
         this.canvas.addEventListener('mousemove', (e) => {
             const rect = this.canvas.getBoundingClientRect();
-            this.renderer.mousePos.x = e.clientX / rect.width;
-            this.renderer.mousePos.y = 1.0 - (e.clientY / rect.height);
+            this.mousePos.x = e.clientX - rect.left;
+            this.mousePos.y = e.clientY - rect.top;
         });
     }
 
@@ -120,34 +137,120 @@ export class NoiseFloor {
     render() {
         if (!this.isActive) return;
 
-        const gl = this.renderer.gl;
+        // Clear canvas with dark background
+        this.ctx.fillStyle = '#0a0a0a';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Resize if needed
-        this.renderer.resize();
+        // Draw grid
+        this.drawGrid();
 
-        // Clear
-        this.renderer.clear(0.04, 0.04, 0.04, 1);
-
-        // Use program
-        gl.useProgram(this.program);
-
-        // Set uniforms
-        gl.uniform1f(this.uniforms.time, this.renderer.time);
-        gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
-        gl.uniform2f(this.uniforms.mouse, this.renderer.mousePos.x, this.renderer.mousePos.y);
-
-        // Bind buffer and draw
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.renderer.buffers.quad);
-        gl.enableVertexAttribArray(this.positionLocation);
-        gl.vertexAttribPointer(this.positionLocation, 2, gl.FLOAT, false, 0, 0);
-
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        // Update and draw particles
+        this.updateParticles();
+        this.drawParticles();
 
         // Update time
-        this.renderer.time += 0.016; // ~60fps
+        this.time += 0.016;
 
         // Continue animation
         this.animationFrame = requestAnimationFrame(() => this.render());
+    }
+
+    drawGrid() {
+        this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+        this.ctx.lineWidth = 1;
+
+        this.gridLines.forEach(line => {
+            // Apply slight wave distortion
+            const distortion = Math.sin(this.time + (line.vertical ? line.x1 : line.y1) * 0.01) * 2;
+
+            this.ctx.beginPath();
+            if (line.vertical) {
+                this.ctx.moveTo(line.x1 + distortion, line.y1);
+                this.ctx.lineTo(line.x2 + distortion, line.y2);
+            } else {
+                this.ctx.moveTo(line.x1, line.y1 + distortion);
+                this.ctx.lineTo(line.x2, line.y2 + distortion);
+            }
+            this.ctx.stroke();
+        });
+    }
+
+    updateParticles() {
+        this.particles.forEach(particle => {
+            // Update position
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+
+            // Mouse influence
+            const dx = this.mousePos.x - particle.x;
+            const dy = this.mousePos.y - particle.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 150) {
+                const force = (150 - dist) / 150;
+                particle.x -= dx * force * 0.02;
+                particle.y -= dy * force * 0.02;
+            }
+
+            // Wrap around edges
+            if (particle.x < 0) particle.x = this.canvas.width;
+            if (particle.x > this.canvas.width) particle.x = 0;
+            if (particle.y < 0) particle.y = this.canvas.height;
+            if (particle.y > this.canvas.height) particle.y = 0;
+
+            // Pulse alpha
+            particle.alpha = 0.3 + Math.sin(this.time * 2 + particle.phase) * 0.3;
+        });
+    }
+
+    drawParticles() {
+        this.particles.forEach(particle => {
+            // Draw particle glow
+            const gradient = this.ctx.createRadialGradient(
+                particle.x, particle.y, 0,
+                particle.x, particle.y, particle.size * 4
+            );
+
+            const color = particle.color === 'cyan'
+                ? `rgba(0, 255, 255, ${particle.alpha})`
+                : `rgba(255, 102, 0, ${particle.alpha})`;
+
+            gradient.addColorStop(0, color);
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(
+                particle.x - particle.size * 4,
+                particle.y - particle.size * 4,
+                particle.size * 8,
+                particle.size * 8
+            );
+
+            // Draw particle core
+            this.ctx.fillStyle = color;
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fill();
+        });
+
+        // Draw connections between nearby particles
+        this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+        this.ctx.lineWidth = 0.5;
+
+        for (let i = 0; i < this.particles.length; i++) {
+            for (let j = i + 1; j < this.particles.length; j++) {
+                const dx = this.particles[i].x - this.particles[j].x;
+                const dy = this.particles[i].y - this.particles[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 100) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
+                    this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
+                    this.ctx.stroke();
+                }
+            }
+        }
     }
 
     stop() {
@@ -164,6 +267,7 @@ export class NoiseFloor {
         this.typewriterContainer.style.opacity = '0';
         this.introText.classList.remove('fade-in');
         this.typewriterContainer.classList.remove('fade-in');
-        this.renderer.time = 0;
+        this.time = 0;
+        this.createParticles();
     }
 }
