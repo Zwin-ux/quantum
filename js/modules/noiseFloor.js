@@ -19,6 +19,12 @@ export class NoiseFloor {
     }
 
     init() {
+        console.log('NoiseFloor: Initializing...');
+
+        // Set canvas size to match viewport
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+
         // Initialize WebGL
         this.renderer = new WebGLRenderer(this.canvas);
         if (!this.renderer || !this.renderer.gl) {
@@ -26,12 +32,16 @@ export class NoiseFloor {
             return;
         }
 
+        console.log('NoiseFloor: WebGL initialized');
+
         // Create shader program
         this.program = this.renderer.createProgram(defaultVertexShader, noiseFragmentShader);
         if (!this.program) {
             console.error('Failed to create shader program');
             return;
         }
+
+        console.log('NoiseFloor: Shader program created');
 
         // Set up quad
         this.renderer.setupQuad();
@@ -49,8 +59,17 @@ export class NoiseFloor {
         // Set up mouse tracking
         this.setupMouseTracking();
 
+        // Set up resize handler
+        window.addEventListener('resize', () => {
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;
+            this.renderer.resize();
+        });
+
         // Resize canvas
         this.renderer.resize();
+
+        console.log('NoiseFloor: Initialization complete');
     }
 
     setupMouseTracking() {

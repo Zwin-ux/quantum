@@ -23,11 +23,14 @@ export class WebGLRenderer {
         this.gl.compileShader(shader);
 
         if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-            console.error('Shader compilation error:', this.gl.getShaderInfoLog(shader));
+            const typeName = type === this.gl.VERTEX_SHADER ? 'VERTEX' : 'FRAGMENT';
+            console.error(`${typeName} Shader compilation error:`, this.gl.getShaderInfoLog(shader));
+            console.error('Shader source:', source);
             this.gl.deleteShader(shader);
             return null;
         }
 
+        console.log(`${type === this.gl.VERTEX_SHADER ? 'Vertex' : 'Fragment'} shader compiled successfully`);
         return shader;
     }
 
@@ -142,7 +145,8 @@ export const defaultVertexShader = `
 `;
 
 // Fragment shader for quantum noise
-export const noiseFragmentShader = `
+export function createNoiseFragmentShader() {
+    return `
     precision mediump float;
 
     varying vec2 vUv;
@@ -150,10 +154,41 @@ export const noiseFragmentShader = `
     uniform vec2 u_resolution;
     uniform vec2 u_mouse;
 
-    ${noiseShaderFunctions}
+    // Hash function for noise
+    float hash(vec2 p) {
+        p = 50.0 * fract(p * 0.3183099 + vec2(0.71, 0.113));
+        return -1.0 + 2.0 * fract(p.x * p.y * (p.x + p.y));
+    }
+
+    // Noise function
+    float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        vec2 u = f * f * (3.0 - 2.0 * f);
+
+        return mix(
+            mix(hash(i + vec2(0.0, 0.0)), hash(i + vec2(1.0, 0.0)), u.x),
+            mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x),
+            u.y
+        );
+    }
+
+    // Fractal Brownian Motion
+    float fbm(vec2 p) {
+        float value = 0.0;
+        float amplitude = 0.5;
+        float frequency = 1.0;
+
+        for(int i = 0; i < 5; i++) {
+            value += amplitude * noise(p * frequency);
+            frequency *= 2.0;
+            amplitude *= 0.5;
+        }
+
+        return value;
+    }
 
     void main() {
-        vec2 uv = vUv;
         vec2 st = gl_FragCoord.xy / u_resolution;
 
         // Calculate distance from mouse
@@ -167,29 +202,39 @@ export const noiseFragmentShader = `
         vec2 distortion = vec2(
             fbm(st * 3.0 + u_time * 0.2),
             fbm(st * 3.0 + u_time * 0.2 + 100.0)
-        ) * influence * 0.1;
+        ) * influence * 0.15;
 
         // Sample noise with distortion
         float noise_value = fbm((st + distortion) * 8.0 + u_time * 0.05);
 
-        // Create particle effect
-        float particles = smoothstep(0.6, 0.8, noise_value);
+        // Create particle effect with higher visibility
+        float particles = smoothstep(0.4, 0.7, noise_value);
 
         // Color mixing (cyan and orange)
         vec3 cyan = vec3(0.0, 1.0, 1.0);
         vec3 orange = vec3(1.0, 0.4, 0.0);
         vec3 color = mix(cyan, orange, noise_value * 0.5 + 0.5);
 
-        // Final color with particles
-        color *= particles * 0.3;
+        // Increase brightness for visibility
+        color *= particles * 0.6;
 
-        // Add subtle grid
+        // Add more visible grid
         float grid = max(
-            smoothstep(0.98, 1.0, fract(st.x * 20.0)),
-            smoothstep(0.98, 1.0, fract(st.y * 20.0))
+            smoothstep(0.96, 1.0, fract(st.x * 20.0)),
+            smoothstep(0.96, 1.0, fract(st.y * 20.0))
         );
-        color += cyan * grid * 0.1;
+        color += cyan * grid * 0.2;
 
-        gl_FragColor = vec4(color, particles * 0.5);
+        // Add ambient glow
+        color += cyan * 0.03;
+        color += orange * 0.02;
+
+        // Mouse influence glow
+        color += cyan * influence * 0.3;
+
+        gl_FragColor = vec4(color, 1.0);
     }
 `;
+}
+
+export const noiseFragmentShader = createNoiseFragmentShader();
