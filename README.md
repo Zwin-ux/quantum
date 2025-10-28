@@ -1,10 +1,14 @@
 # Quantum Signals
 
+[![Deploy to GitHub Pages](https://github.com/Zwin-ux/quantum/actions/workflows/deploy.yml/badge.svg)](https://github.com/Zwin-ux/quantum/actions/workflows/deploy.yml)
+
 **When computation hits reality's edge.**
 
 An interactive, physics-inspired micro-experience exploring the limits of knowledge and computation through quantum mechanics concepts.
 
 🔗 **Live Demo**: [https://zwin-ux.github.io/quantum/](https://zwin-ux.github.io/quantum/)
+
+📖 **Deployment Guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ---
 
@@ -123,24 +127,27 @@ quantm/
 
 ## Deployment to GitHub Pages
 
-1. Push your code to the `master` branch:
-   ```bash
-   git add .
-   git commit -m "Initial Quantum Signals implementation"
-   git push origin master
-   ```
+**The repository is already configured for automatic deployment!**
 
-2. Enable GitHub Pages:
-   - Go to your repository settings
-   - Navigate to "Pages" section
-   - Select source: "Deploy from a branch"
-   - Select branch: `master` / `root`
-   - Click "Save"
+### Quick Setup (2 minutes):
 
-3. Your site will be live at:
-   ```
-   https://zwin-ux.github.io/quantum/
-   ```
+1. Go to your repository: `https://github.com/Zwin-ux/quantum`
+2. Click **Settings** → **Pages**
+3. Under "Build and deployment", set **Source** to **GitHub Actions**
+4. Wait 1-2 minutes for deployment
+5. Your site will be live at: `https://zwin-ux.github.io/quantum/`
+
+### Detailed Instructions
+
+For complete setup instructions, troubleshooting, and advanced options, see:
+**[DEPLOYMENT.md](DEPLOYMENT.md)**
+
+The deployment guide covers:
+- Automatic deployment with GitHub Actions
+- Manual deployment options
+- Troubleshooting common issues
+- Custom domain setup
+- Monitoring deployments
 
 ## Browser Compatibility
 

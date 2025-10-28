@@ -7,7 +7,11 @@
       "Read(//c/Users/mzwin/CascadeProjects/**)",
       "Bash(git rev-parse:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh --version:*)",
+      "Bash(gh auth:*)"
     ],
     "deny": [],
     "ask": []
