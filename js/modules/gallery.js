@@ -12,6 +12,9 @@ export class Gallery {
         this.isActive = false;
         this.signals = [];
         this.selectedIndex = null;
+        
+        // Point tracking
+        this.moduleIndex = 5;
     }
 
     init() {

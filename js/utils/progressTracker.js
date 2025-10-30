@@ -13,11 +13,12 @@ export class ProgressTracker {
             version: '1.0',
             modules: {
                 0: { points: 0, completed: false, unlocked: true, bestScore: 0, requiredPoints: 10 },
-                1: { points: 0, completed: false, unlocked: false, bestScore: 0, requiredPoints: 50 },
+                1: { points: 0, completed: false, unlocked: false, bestScore: 0, requiredPoints: 30 },
                 2: { points: 0, completed: false, unlocked: false, bestScore: 0, requiredPoints: 30 },
-                3: { points: 0, completed: false, unlocked: false, bestScore: 0, requiredPoints: 40 },
+                3: { points: 0, completed: false, unlocked: false, bestScore: 0, requiredPoints: 35 },
                 4: { points: 0, completed: false, unlocked: false, bestScore: 0, requiredPoints: 20 },
-                5: { points: 0, completed: false, unlocked: false, bestScore: 0, requiredPoints: 0 }
+                5: { points: 0, completed: false, unlocked: false, bestScore: 0, requiredPoints: 0 },
+                6: { points: 0, completed: false, unlocked: false, bestScore: 0, requiredPoints: 0 }
             },
             totalPoints: 0,
             currentModule: 0,
@@ -203,7 +204,7 @@ export class ProgressTracker {
             totalPoints: this.progress.totalPoints,
             unlockedModules: unlockedCount,
             completedModules: completedCount,
-            totalModules: 6,
+            totalModules: 7,
             completedJourney: this.progress.completedJourney,
             currentModule: this.progress.currentModule
         };

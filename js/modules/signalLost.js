@@ -13,7 +13,7 @@ export class SignalLost {
         this.onRestartCallback = null;
 
         // Point tracking
-        this.moduleIndex = 5;
+        this.moduleIndex = 6;
         this.bonusAwarded = false;
     }
 
