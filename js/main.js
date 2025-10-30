@@ -116,23 +116,24 @@ class QuantumSignals {
             this.pointsDisplay.textContent = `⭐ ${totalPoints} POINTS`;
         }
 
-        // Update navigation button states
+        // Update navigation button states with quantum indicators
         this.navButtons.forEach((btn, index) => {
             const isUnlocked = progressTracker.isModuleUnlocked(index);
             const isCompleted = progressTracker.isModuleCompleted(index);
+            const originalText = btn.textContent.replace(/^[|⟩⟨∅]+ /, '');
 
             // Remove all state classes
             btn.classList.remove('locked', 'unlocked', 'completed');
 
             if (isCompleted) {
                 btn.classList.add('completed');
-                btn.innerHTML = `✓ ${btn.dataset.label || btn.textContent}`;
+                btn.innerHTML = `|1⟩ ${originalText}`;
             } else if (isUnlocked) {
                 btn.classList.add('unlocked');
-                btn.innerHTML = `🔓 ${btn.dataset.label || btn.textContent}`;
+                btn.innerHTML = `⟨ψ| ${originalText}`;
             } else {
                 btn.classList.add('locked');
-                btn.innerHTML = `🔒 ${btn.dataset.label || btn.textContent}`;
+                btn.innerHTML = `∅ ${originalText}`;
             }
         });
     }

@@ -110,14 +110,14 @@ export class NoiseFloor {
         setTimeout(() => {
             this.introText.classList.add('fade-in');
             this.introText.style.opacity = '1';
-        }, 500);
+        }, 200);
 
         // Start typewriter effect after delay
         setTimeout(() => {
             this.typewriterContainer.classList.add('fade-in');
             this.typewriterContainer.style.opacity = '1';
             this.startTypewriter();
-        }, 3000);
+        }, 1200);
 
         // Start rendering
         this.render();
@@ -143,7 +143,7 @@ export class NoiseFloor {
             if (this.charIndex < this.message.length) {
                 this.typewriterText.textContent += this.message[this.charIndex];
                 this.charIndex++;
-                setTimeout(typeNextChar, 50 + Math.random() * 50);
+                setTimeout(typeNextChar, 30 + Math.random() * 30);
             } else {
                 // Remove cursor after typing completes
                 setTimeout(() => {

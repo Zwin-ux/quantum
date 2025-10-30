@@ -47,6 +47,23 @@ body {
     border-bottom-color: var(--cyan);
 }
 
+.nav-btn.locked {
+    opacity: 0.3;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-btn.unlocked {
+    opacity: 0.7;
+    color: var(--cyan);
+    text-shadow: 0 0 5px var(--cyan);
+}
+
+.nav-btn.completed {
+    opacity: 1;
+    color: var(--orange);
+    text-shadow: 0 0 8px var(--orange);
+}
+
 /* CRT Glow Effects */
 .glitch-text {
     text-shadow:
