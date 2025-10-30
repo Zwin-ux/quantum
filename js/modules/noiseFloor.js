@@ -21,8 +21,9 @@ export class NoiseFloor {
         this.animationFrame = null;
 
         // Point tracking
-        this.pointsInterval = null;
         this.moduleIndex = 0;
+        this.measurementCount = 0;
+        this.requiredMeasurements = 10;
     }
 
     init() {
@@ -101,6 +102,51 @@ export class NoiseFloor {
             this.mousePos.x = e.clientX - rect.left;
             this.mousePos.y = e.clientY - rect.top;
         });
+
+        // Click to measure vacuum fluctuations
+        this.canvas.addEventListener('click', (e) => {
+            if (!this.isActive) return;
+
+            const rect = this.canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            // Check if click is near any particle
+            this.particles.forEach((particle, index) => {
+                const dx = clickX - particle.x;
+                const dy = clickY - particle.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 20) {
+                    this.measureParticle(particle, index);
+                }
+            });
+        });
+    }
+
+    measureParticle(particle, index) {
+        // Visual feedback - flash the particle
+        particle.measured = true;
+        particle.alpha = 1;
+
+        setTimeout(() => {
+            particle.measured = false;
+        }, 500);
+
+        // Award points
+        this.measurementCount++;
+        const result = progressTracker.addPoints(this.moduleIndex, 1);
+
+        // Update typewriter text with progress
+        if (this.measurementCount < this.requiredMeasurements) {
+            const remaining = this.requiredMeasurements - this.measurementCount;
+            this.typewriterText.textContent = `Measured ${this.measurementCount}/${this.requiredMeasurements} vacuum fluctuations. Click on particles to measure them! (${remaining} more needed)`;
+        }
+
+        if (result.completed) {
+            console.log('✓ Noise Floor completed! You measured quantum vacuum fluctuations. Module 1 unlocked.');
+            this.typewriterText.textContent = `✓ Complete! You measured ${this.measurementCount} vacuum fluctuations. Understanding: Quantum vacuum is never truly empty.`;
+        }
     }
 
     async start() {
@@ -121,21 +167,6 @@ export class NoiseFloor {
 
         // Start rendering
         this.render();
-
-        // Start point tracking (1 point per second)
-        this.startPointTracking();
-    }
-
-    startPointTracking() {
-        // Award 1 point every second for watching
-        this.pointsInterval = setInterval(() => {
-            if (this.isActive) {
-                const result = progressTracker.addPoints(this.moduleIndex, 1);
-                if (result.completed) {
-                    console.log('Noise Floor completed! Module 1 unlocked.');
-                }
-            }
-        }, 1000);
     }
 
     startTypewriter() {
@@ -145,8 +176,9 @@ export class NoiseFloor {
                 this.charIndex++;
                 setTimeout(typeNextChar, 30 + Math.random() * 30);
             } else {
-                // Remove cursor after typing completes
+                // Show instruction after educational message
                 setTimeout(() => {
+                    this.typewriterText.textContent = this.message + '\n\n👆 Click on the glowing particles to measure them! (0/10 measured)';
                     this.typewriterText.style.borderRight = 'none';
                 }, 1000);
             }
@@ -279,14 +311,11 @@ export class NoiseFloor {
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
         }
-        if (this.pointsInterval) {
-            clearInterval(this.pointsInterval);
-            this.pointsInterval = null;
-        }
     }
 
     reset() {
         this.charIndex = 0;
+        this.measurementCount = 0;
         this.typewriterText.textContent = '';
         this.introText.style.opacity = '0';
         this.typewriterContainer.style.opacity = '0';
@@ -294,11 +323,5 @@ export class NoiseFloor {
         this.typewriterContainer.classList.remove('fade-in');
         this.time = 0;
         this.createParticles();
-
-        // Clear points interval
-        if (this.pointsInterval) {
-            clearInterval(this.pointsInterval);
-            this.pointsInterval = null;
-        }
     }
 }
