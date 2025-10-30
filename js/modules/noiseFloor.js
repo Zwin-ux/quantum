@@ -10,7 +10,7 @@ export class NoiseFloor {
         this.typewriterContainer = document.getElementById('typewriter-container');
         this.typewriterText = document.getElementById('typewriter-text');
 
-        this.message = "Information has a cost.";
+        this.message = "At quantum scales, even empty space fluctuates with energy. This is quantum vacuum noise - particles constantly appearing and disappearing due to Heisenberg's uncertainty principle: ΔE·Δt ≥ ℏ/2";
         this.charIndex = 0;
         this.isActive = false;
 

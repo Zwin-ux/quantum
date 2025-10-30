@@ -255,15 +255,4 @@ document.addEventListener('contextmenu', (e) => {
 });
 
 // Log to console
-console.log(`
-    ╔═══════════════════════════════════════╗
-    ║   QUANTUM SIGNALS                     ║
-    ║   When computation hits reality's edge║
-    ╚═══════════════════════════════════════╝
-
-    Navigation:
-    - Arrow Keys: Navigate modules
-    - 1-7: Jump to specific module
-    - I: Toggle info panel (learn concepts)
-    - Click navigation menu
-`);
+console.log('Quantum Signals - Interactive Quantum Mechanics Learning\n\nNavigation:\n• Arrow Keys: Navigate modules\n• 1-6: Jump to specific module\n• Click navigation menu\n\nLearn quantum concepts through hands-on interaction!');
