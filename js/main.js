@@ -7,6 +7,7 @@ import { Entanglement } from './modules/entanglement.js';
 import { ComputationLimit } from './modules/computationLimit.js';
 import { Gallery } from './modules/gallery.js';
 import { SignalLost } from './modules/signalLost.js';
+import { InfoPanel } from './modules/infoPanel.js';
 import { progressTracker } from './utils/progressTracker.js';
 
 class QuantumSignals {
@@ -18,10 +19,15 @@ class QuantumSignals {
 
         this.signalHash = '';
         this.pointsDisplay = null;
+        this.infoPanel = null;
     }
 
     async init() {
         console.log('Initializing Quantum Signals...');
+
+        // Initialize info panel
+        this.infoPanel = new InfoPanel();
+        this.infoPanel.init();
 
         // Initialize modules
         this.modules = [
@@ -105,6 +111,9 @@ class QuantumSignals {
                 if (progressTracker.isModuleUnlocked(moduleIndex)) {
                     this.activateModule(moduleIndex);
                 }
+            } else if (e.key === 'i' || e.key === 'I') {
+                // Toggle info panel for current module
+                this.infoPanel.toggle(this.currentModule);
             }
         });
     }
@@ -255,5 +264,6 @@ console.log(`
     Navigation:
     - Arrow Keys: Navigate modules
     - 1-7: Jump to specific module
+    - I: Toggle info panel (learn concepts)
     - Click navigation menu
 `);
