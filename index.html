@@ -146,8 +146,22 @@
         <!-- Module 3: Entanglement -->
         <section id="module-3" class="module w-full h-full relative hidden">
             <div class="absolute inset-0 flex flex-col items-center justify-center p-8">
-                <div class="text-center mb-8">
-                    <h2 class="text-xl tracking-widest mb-2">ENTANGLEMENT</h2>
+                <div class="text-center mb-4">
+                    <h2 class="text-xl tracking-widest mb-2">QUANTUM ENTANGLEMENT</h2>
+                    <p class="text-sm text-quantum-cyan opacity-70 max-w-2xl">
+                        Entangled particles share quantum states instantly, regardless of distance. When you measure one, the other responds immediately - Einstein called it "spooky action at a distance."
+                    </p>
+                </div>
+                <div class="text-center mb-4 text-sm space-y-1">
+                    <div class="text-quantum-orange">
+                        Link Status: <span id="entangle-status">UNLINKED</span>
+                    </div>
+                    <div class="text-quantum-cyan">
+                        Correlation: <span id="entangle-correlation">0.00</span> | Matching States: <span id="entangle-matches">0/256</span>
+                    </div>
+                    <div class="text-xs opacity-50 mt-2">
+                        <span id="entangle-info">Click LINK to entangle the systems</span>
+                    </div>
                 </div>
                 <div class="flex gap-8 items-center">
                     <div class="text-center">
@@ -157,9 +171,9 @@
                         </div>
                     </div>
                     <div class="flex flex-col items-center">
-                        <div class="entangle-line w-16 h-px bg-quantum-cyan opacity-30"></div>
-                        <p class="text-xs my-2 text-quantum-orange">⟷</p>
-                        <div class="entangle-line w-16 h-px bg-quantum-cyan opacity-30"></div>
+                        <div id="entangle-line-1" class="entangle-line w-16 h-px bg-quantum-cyan opacity-30 transition-opacity"></div>
+                        <p id="entangle-symbol" class="text-xs my-2 text-quantum-orange opacity-30 transition-opacity">⟷</p>
+                        <div id="entangle-line-2" class="entangle-line w-16 h-px bg-quantum-cyan opacity-30 transition-opacity"></div>
                     </div>
                     <div class="text-center">
                         <p class="text-xs mb-4 opacity-50">REMOTE</p>
@@ -168,7 +182,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="mt-8 text-center">
+                <div class="mt-6 text-center">
                     <button id="link-btn" class="btn-primary px-8 py-3 border border-quantum-orange hover:bg-quantum-orange hover:text-quantum-dark transition-all">
                         [ LINK ]
                     </button>

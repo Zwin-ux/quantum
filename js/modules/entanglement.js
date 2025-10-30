@@ -21,6 +21,15 @@ export class Entanglement {
         // Point tracking
         this.moduleIndex = 3;
         this.linkTime = null;
+
+        // UI elements for statistics
+        this.statusDisplay = document.getElementById('entangle-status');
+        this.correlationDisplay = document.getElementById('entangle-correlation');
+        this.matchesDisplay = document.getElementById('entangle-matches');
+        this.infoDisplay = document.getElementById('entangle-info');
+        this.line1 = document.getElementById('entangle-line-1');
+        this.line2 = document.getElementById('entangle-line-2');
+        this.symbol = document.getElementById('entangle-symbol');
     }
 
     init() {
@@ -85,6 +94,15 @@ export class Entanglement {
             this.linkBtn.classList.add('border-quantum-cyan');
             this.startGhostUser();
 
+            // Visual feedback - brighten connection
+            this.line1.style.opacity = '1';
+            this.line2.style.opacity = '1';
+            this.symbol.style.opacity = '1';
+
+            // Update status
+            this.statusDisplay.textContent = 'ENTANGLED';
+            this.infoDisplay.textContent = 'Quantum correlation active - changes propagate instantly';
+
             // Award points for linking
             progressTracker.addPoints(this.moduleIndex, 5);
             this.linkTime = Date.now();
@@ -93,6 +111,15 @@ export class Entanglement {
             this.linkBtn.classList.remove('border-quantum-cyan');
             this.linkBtn.classList.add('border-quantum-orange');
             this.stopGhostUser();
+
+            // Visual feedback - dim connection
+            this.line1.style.opacity = '0.3';
+            this.line2.style.opacity = '0.3';
+            this.symbol.style.opacity = '0.3';
+
+            // Update status
+            this.statusDisplay.textContent = 'UNLINKED';
+            this.infoDisplay.textContent = 'Systems independent - no quantum correlation';
 
             // Check for time-linked bonus (30+ seconds)
             if (this.linkTime) {
@@ -104,6 +131,8 @@ export class Entanglement {
                 this.linkTime = null;
             }
         }
+
+        this.updateCorrelationDisplay();
     }
 
     onTileClick(index) {
@@ -127,7 +156,10 @@ export class Entanglement {
             setTimeout(() => {
                 this.gridB[index] = newState;
                 this.updateTile(this.tilesB[index], newState, true);
+                this.updateCorrelationDisplay();
             }, 100 + Math.random() * 200);
+        } else {
+            this.updateCorrelationDisplay();
         }
     }
 
@@ -194,6 +226,35 @@ export class Entanglement {
         this.stopGhostUser();
     }
 
+    updateCorrelationDisplay() {
+        // Calculate correlation between grids
+        let matches = 0;
+        let total = this.gridSize * this.gridSize;
+
+        for (let i = 0; i < total; i++) {
+            if (this.gridA[i] === this.gridB[i]) {
+                matches++;
+            }
+        }
+
+        const correlation = matches / total;
+
+        // Update displays
+        this.correlationDisplay.textContent = `${(correlation * 100).toFixed(1)}%`;
+        this.matchesDisplay.textContent = `${matches}/${total}`;
+
+        // Color code correlation strength
+        if (correlation >= 0.9) {
+            this.correlationDisplay.style.color = '#00ff88'; // Strong correlation
+        } else if (correlation >= 0.7) {
+            this.correlationDisplay.style.color = '#00ddff'; // Moderate correlation
+        } else if (correlation >= 0.5) {
+            this.correlationDisplay.style.color = '#ffaa00'; // Weak correlation
+        } else {
+            this.correlationDisplay.style.color = '#ff4444'; // Very weak/no correlation
+        }
+    }
+
     reset() {
         // Stop ghost user
         this.stopGhostUser();
@@ -220,5 +281,11 @@ export class Entanglement {
         this.linkBtn.textContent = '[ LINK ]';
         this.linkBtn.classList.remove('border-quantum-cyan');
         this.linkBtn.classList.add('border-quantum-orange');
+
+        // Reset displays
+        this.statusDisplay.textContent = 'UNLINKED';
+        this.correlationDisplay.textContent = '100.0%';
+        this.matchesDisplay.textContent = '256/256';
+        this.infoDisplay.textContent = 'Click LINK to entangle the quantum systems';
     }
 }
