@@ -15,6 +15,15 @@ export class Superposition {
         this.clickCount = 0;
         this.startTime = null;
         this.bonusAwarded = false;
+
+        // Statistics tracking
+        this.zerosCount = 0;
+        this.onesCount = 0;
+
+        // UI elements
+        this.measurementsDisplay = document.getElementById('superposition-measurements');
+        this.zerosDisplay = document.getElementById('superposition-zeros');
+        this.onesDisplay = document.getElementById('superposition-ones');
     }
 
     init() {
@@ -105,6 +114,14 @@ export class Superposition {
         tile.classList.add(`state-${newState}`);
         tile.textContent = newState;
 
+        // Update statistics
+        if (newState === 0) {
+            this.zerosCount++;
+        } else {
+            this.onesCount++;
+        }
+        this.updateStatsDisplay();
+
         // Award points
         this.clickCount++;
         const result = progressTracker.addPoints(this.moduleIndex, 1);
@@ -121,6 +138,25 @@ export class Superposition {
 
         if (result.completed) {
             console.log('Superposition completed! Module 2 unlocked.');
+        }
+    }
+
+    updateStatsDisplay() {
+        const totalMeasurements = this.zerosCount + this.onesCount;
+        this.measurementsDisplay.textContent = totalMeasurements;
+        this.zerosDisplay.textContent = this.zerosCount;
+        this.onesDisplay.textContent = this.onesCount;
+
+        // Calculate probabilities
+        if (totalMeasurements > 0) {
+            const probZero = ((this.zerosCount / totalMeasurements) * 100).toFixed(1);
+            const probOne = ((this.onesCount / totalMeasurements) * 100).toFixed(1);
+
+            // Update probability display
+            const probabilityText = document.querySelector('#module-1 .text-xs');
+            if (probabilityText) {
+                probabilityText.textContent = `Measured probabilities: P(0) = ${probZero}%, P(1) = ${probOne}%`;
+            }
         }
     }
 
@@ -170,6 +206,17 @@ export class Superposition {
         this.clickCount = 0;
         this.startTime = null;
         this.bonusAwarded = false;
+
+        // Reset statistics
+        this.zerosCount = 0;
+        this.onesCount = 0;
+        this.updateStatsDisplay();
+
+        // Reset probability display
+        const probabilityText = document.querySelector('#module-1 .text-xs');
+        if (probabilityText) {
+            probabilityText.textContent = 'Equal probability: P(0) = 50%, P(1) = 50%';
+        }
     }
 
     getGridState() {
