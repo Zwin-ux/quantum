@@ -22,6 +22,11 @@ export class Collapse {
 
         // Point tracking
         this.moduleIndex = 2;
+
+        // UI elements for statistics
+        this.stateDisplay = document.getElementById('collapse-state');
+        this.interactionsDisplay = document.getElementById('collapse-interactions');
+        this.entropyInfoDisplay = document.getElementById('collapse-entropy-info');
     }
 
     init() {
@@ -68,11 +73,26 @@ export class Collapse {
                     const index = parseInt(tile.dataset.index);
                     this.interactions.push(index);
 
+                    // Update interaction display
+                    this.updateStatsDisplay();
+
                     // Award 1 point per interaction
                     progressTracker.addPoints(this.moduleIndex, 1);
                 }
             }
         });
+    }
+
+    updateStatsDisplay() {
+        this.interactionsDisplay.textContent = this.interactions.length;
+
+        if (this.interactions.length === 0) {
+            this.entropyInfoDisplay.textContent = 'Each interaction seeds the collapse pattern';
+        } else if (this.interactions.length < 10) {
+            this.entropyInfoDisplay.textContent = `${this.interactions.length} interaction${this.interactions.length === 1 ? '' : 's'} recorded - influencing collapse outcome`;
+        } else {
+            this.entropyInfoDisplay.textContent = `${this.interactions.length} interactions - highly personalized collapse pattern`;
+        }
     }
 
     startFlickering(index) {
@@ -88,6 +108,9 @@ export class Collapse {
         if (this.isCollapsed || !this.isActive) return;
 
         this.isCollapsed = true;
+
+        // Update state display
+        this.stateDisplay.textContent = 'COLLAPSING...';
 
         // Award points for observing
         progressTracker.addPoints(this.moduleIndex, 20);
@@ -131,11 +154,18 @@ export class Collapse {
             }, Math.random() * 500);
         });
 
+        // Calculate entropy after collapse
+        setTimeout(() => {
+            const entropy = this.calculateEntropy(pattern);
+            this.stateDisplay.textContent = `COLLAPSED (Entropy: ${entropy.toFixed(2)} bits)`;
+            this.entropyInfoDisplay.textContent = `Wave function collapsed to definite states. Pattern determined by ${this.interactions.length} interaction${this.interactions.length === 1 ? '' : 's'}.`;
+        }, 600);
+
         // Show hash after collapse animation
         setTimeout(() => {
             this.signalHashEl.textContent = this.signalHash;
             this.hashDisplay.style.opacity = '1';
-            
+
             // Store signal to backend
             api.storeSignal(this.signalHash, pattern);
             api.trackEvent('observation');
@@ -145,6 +175,21 @@ export class Collapse {
         this.observeBtn.disabled = true;
         this.observeBtn.style.opacity = '0.3';
         this.observeBtn.style.pointerEvents = 'none';
+    }
+
+    calculateEntropy(pattern) {
+        // Shannon entropy: H = -Σ p(x) log₂(p(x))
+        const total = pattern.length;
+        const zeros = pattern.filter(x => x === 0).length;
+        const ones = pattern.filter(x => x === 1).length;
+
+        if (zeros === 0 || ones === 0) return 0; // No entropy if all same
+
+        const pZero = zeros / total;
+        const pOne = ones / total;
+
+        const entropy = -(pZero * Math.log2(pZero) + pOne * Math.log2(pOne));
+        return entropy;
     }
 
     copyHash() {
@@ -205,6 +250,11 @@ export class Collapse {
         this.observeBtn.disabled = false;
         this.observeBtn.style.opacity = '1';
         this.observeBtn.style.pointerEvents = 'auto';
+
+        // Reset statistics display
+        this.stateDisplay.textContent = 'SUPERPOSITION (Maximum Entropy)';
+        this.interactionsDisplay.textContent = '0';
+        this.entropyInfoDisplay.textContent = 'Each interaction seeds the collapse pattern';
     }
 
     getSignalHash() {
