@@ -5,7 +5,9 @@ import { Superposition } from './modules/superposition.js';
 import { Collapse } from './modules/collapse.js';
 import { Entanglement } from './modules/entanglement.js';
 import { ComputationLimit } from './modules/computationLimit.js';
+import { Gallery } from './modules/gallery.js';
 import { SignalLost } from './modules/signalLost.js';
+import { progressTracker } from './utils/progressTracker.js';
 
 class QuantumSignals {
     constructor() {
@@ -15,6 +17,7 @@ class QuantumSignals {
         this.navButtons = [];
 
         this.signalHash = '';
+        this.pointsDisplay = null;
     }
 
     async init() {
@@ -27,6 +30,7 @@ class QuantumSignals {
             new Collapse(),
             new Entanglement(),
             new ComputationLimit(),
+            new Gallery(),
             new SignalLost()
         ];
 
@@ -38,7 +42,7 @@ class QuantumSignals {
         });
 
         // Set up restart callback for Signal Lost
-        this.modules[5].setRestartCallback(() => this.restart());
+        this.modules[6].setRestartCallback(() => this.restart());
 
         // Get module elements
         this.moduleElements = [
@@ -47,24 +51,46 @@ class QuantumSignals {
             document.getElementById('module-2'),
             document.getElementById('module-3'),
             document.getElementById('module-4'),
-            document.getElementById('module-5')
+            document.getElementById('module-5'),
+            document.getElementById('module-6')
         ];
 
         // Get navigation buttons
         this.navButtons = Array.from(document.querySelectorAll('.nav-btn'));
 
+        // Get points display
+        this.pointsDisplay = document.getElementById('points-display');
+
+        // Set up progress tracking
+        this.setupProgressTracking();
+
         // Set up navigation
         this.setupNavigation();
 
+        // Update UI with initial progress
+        this.updateNavUI();
+
         // Start with first module
         await this.activateModule(0);
+    }
+
+    setupProgressTracking() {
+        // Listen for progress changes
+        progressTracker.addListener((progress) => {
+            this.updateNavUI();
+        });
     }
 
     setupNavigation() {
         // Click navigation
         this.navButtons.forEach((btn, index) => {
             btn.addEventListener('click', () => {
-                this.activateModule(index);
+                // Check if module is unlocked
+                if (progressTracker.isModuleUnlocked(index)) {
+                    this.activateModule(index);
+                } else {
+                    console.log(`Module ${index} is locked`);
+                }
             });
         });
 
@@ -74,15 +100,51 @@ class QuantumSignals {
                 this.nextModule();
             } else if (e.key === 'ArrowLeft') {
                 this.previousModule();
-            } else if (e.key >= '1' && e.key <= '6') {
+            } else if (e.key >= '1' && e.key <= '7') {
                 const moduleIndex = parseInt(e.key) - 1;
-                this.activateModule(moduleIndex);
+                if (progressTracker.isModuleUnlocked(moduleIndex)) {
+                    this.activateModule(moduleIndex);
+                }
+            }
+        });
+    }
+
+    updateNavUI() {
+        // Update points display
+        const totalPoints = progressTracker.getTotalPoints();
+        if (this.pointsDisplay) {
+            this.pointsDisplay.textContent = `⭐ ${totalPoints} POINTS`;
+        }
+
+        // Update navigation button states
+        this.navButtons.forEach((btn, index) => {
+            const isUnlocked = progressTracker.isModuleUnlocked(index);
+            const isCompleted = progressTracker.isModuleCompleted(index);
+
+            // Remove all state classes
+            btn.classList.remove('locked', 'unlocked', 'completed');
+
+            if (isCompleted) {
+                btn.classList.add('completed');
+                btn.innerHTML = `✓ ${btn.dataset.label || btn.textContent}`;
+            } else if (isUnlocked) {
+                btn.classList.add('unlocked');
+                btn.innerHTML = `🔓 ${btn.dataset.label || btn.textContent}`;
+            } else {
+                btn.classList.add('locked');
+                btn.innerHTML = `🔒 ${btn.dataset.label || btn.textContent}`;
             }
         });
     }
 
     async activateModule(index) {
         if (index < 0 || index >= this.modules.length) return;
+
+        // Check if module is unlocked
+        if (!progressTracker.isModuleUnlocked(index)) {
+            console.log(`Cannot activate locked module ${index}`);
+            return;
+        }
 
         // Stop current module
         if (this.modules[this.currentModule]) {
@@ -114,7 +176,7 @@ class QuantumSignals {
         if (this.modules[index]) {
             if (this.modules[index].start) {
                 // Pass signal hash to Signal Lost module
-                if (index === 5 && this.signalHash) {
+                if (index === 6 && this.signalHash) {
                     await this.modules[index].start(this.signalHash);
                 } else {
                     await this.modules[index].start();
@@ -132,6 +194,12 @@ class QuantumSignals {
                 }
             }, 500);
         }
+
+        // Save current module to progress tracker
+        progressTracker.setCurrentModule(index);
+
+        // Update UI
+        this.updateNavUI();
     }
 
     nextModule() {
@@ -185,6 +253,6 @@ console.log(`
 
     Navigation:
     - Arrow Keys: Navigate modules
-    - 1-6: Jump to specific module
+    - 1-7: Jump to specific module
     - Click navigation menu
 `);

@@ -1,5 +1,7 @@
 // Module 5: Signal Lost - Outro Scene
 
+import { progressTracker } from '../utils/progressTracker.js';
+
 export class SignalLost {
     constructor() {
         this.finalMessage = document.getElementById('final-message');
@@ -9,6 +11,10 @@ export class SignalLost {
 
         this.isActive = false;
         this.onRestartCallback = null;
+
+        // Point tracking
+        this.moduleIndex = 5;
+        this.bonusAwarded = false;
     }
 
     init() {
@@ -25,6 +31,15 @@ export class SignalLost {
 
     async start(signalHash = 'Signal-#000000') {
         this.isActive = true;
+
+        // Award journey completion bonus (once)
+        if (!this.bonusAwarded) {
+            progressTracker.addPoints(this.moduleIndex, 100);
+            progressTracker.progress.completedJourney = true;
+            progressTracker.saveProgress();
+            this.bonusAwarded = true;
+            console.log('🎉 Journey completed! +100 bonus points');
+        }
 
         // Set the final hash
         this.finalHash.textContent = signalHash;

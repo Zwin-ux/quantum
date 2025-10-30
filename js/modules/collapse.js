@@ -1,6 +1,8 @@
 // Module 2: Collapse - Wave Function Collapse and Hash Generation
 
 import { generateSignalHash, generatePattern, createInteractionSeed } from '../utils/hash.js';
+import { progressTracker } from '../utils/progressTracker.js';
+import { api } from '../utils/api.js';
 
 export class Collapse {
     constructor() {
@@ -17,6 +19,9 @@ export class Collapse {
         this.isCollapsed = false;
         this.interactions = [];
         this.signalHash = '';
+
+        // Point tracking
+        this.moduleIndex = 2;
     }
 
     init() {
@@ -62,6 +67,9 @@ export class Collapse {
                 if (tile) {
                     const index = parseInt(tile.dataset.index);
                     this.interactions.push(index);
+
+                    // Award 1 point per interaction
+                    progressTracker.addPoints(this.moduleIndex, 1);
                 }
             }
         });
@@ -80,6 +88,20 @@ export class Collapse {
         if (this.isCollapsed || !this.isActive) return;
 
         this.isCollapsed = true;
+
+        // Award points for observing
+        progressTracker.addPoints(this.moduleIndex, 20);
+
+        // Bonus points if 15+ interactions
+        if (this.interactions.length >= 15) {
+            progressTracker.addPoints(this.moduleIndex, 10);
+            console.log('Interaction bonus awarded! +10 points');
+        }
+
+        const result = progressTracker.getModuleProgress(this.moduleIndex);
+        if (result.completed) {
+            console.log('Collapse completed! Module 3 unlocked.');
+        }
 
         // Create seed from interactions
         const seed = createInteractionSeed(this.interactions);
@@ -113,6 +135,10 @@ export class Collapse {
         setTimeout(() => {
             this.signalHashEl.textContent = this.signalHash;
             this.hashDisplay.style.opacity = '1';
+            
+            // Store signal to backend
+            api.storeSignal(this.signalHash, pattern);
+            api.trackEvent('observation');
         }, 1000);
 
         // Disable observe button

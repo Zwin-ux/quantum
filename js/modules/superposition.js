@@ -1,5 +1,7 @@
 // Module 1: Superposition - Interactive Binary Grid
 
+import { progressTracker } from '../utils/progressTracker.js';
+
 export class Superposition {
     constructor() {
         this.container = document.getElementById('superposition-grid');
@@ -7,6 +9,12 @@ export class Superposition {
         this.grid = [];
         this.tiles = [];
         this.isActive = false;
+
+        // Point tracking
+        this.moduleIndex = 1;
+        this.clickCount = 0;
+        this.startTime = null;
+        this.bonusAwarded = false;
     }
 
     init() {
@@ -96,6 +104,24 @@ export class Superposition {
         tile.classList.remove('superposition', 'state-0', 'state-1');
         tile.classList.add(`state-${newState}`);
         tile.textContent = newState;
+
+        // Award points
+        this.clickCount++;
+        const result = progressTracker.addPoints(this.moduleIndex, 1);
+
+        // Check for speed bonus (10 tiles in under 30 seconds)
+        if (!this.bonusAwarded && this.clickCount === 10) {
+            const elapsed = (Date.now() - this.startTime) / 1000;
+            if (elapsed < 30) {
+                progressTracker.addPoints(this.moduleIndex, 10);
+                this.bonusAwarded = true;
+                console.log('Speed bonus awarded! +10 points');
+            }
+        }
+
+        if (result.completed) {
+            console.log('Superposition completed! Module 2 unlocked.');
+        }
     }
 
     startFlickering(index) {
@@ -109,6 +135,7 @@ export class Superposition {
 
     start() {
         this.isActive = true;
+        this.startTime = Date.now();
     }
 
     stop() {
@@ -138,6 +165,11 @@ export class Superposition {
             tile.classList.add('state-0');
             tile.textContent = '';
         });
+
+        // Reset point tracking
+        this.clickCount = 0;
+        this.startTime = null;
+        this.bonusAwarded = false;
     }
 
     getGridState() {

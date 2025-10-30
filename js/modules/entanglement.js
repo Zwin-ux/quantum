@@ -1,5 +1,7 @@
 // Module 3: Entanglement - Split-screen Synced Grids
 
+import { progressTracker } from '../utils/progressTracker.js';
+
 export class Entanglement {
     constructor() {
         this.containerA = document.getElementById('entangle-grid-a');
@@ -15,6 +17,10 @@ export class Entanglement {
         this.isActive = false;
         this.isLinked = false;
         this.ghostUserActive = false;
+
+        // Point tracking
+        this.moduleIndex = 3;
+        this.linkTime = null;
     }
 
     init() {
@@ -78,11 +84,25 @@ export class Entanglement {
             this.linkBtn.classList.remove('border-quantum-orange');
             this.linkBtn.classList.add('border-quantum-cyan');
             this.startGhostUser();
+
+            // Award points for linking
+            progressTracker.addPoints(this.moduleIndex, 5);
+            this.linkTime = Date.now();
         } else {
             this.linkBtn.textContent = '[ LINK ]';
             this.linkBtn.classList.remove('border-quantum-cyan');
             this.linkBtn.classList.add('border-quantum-orange');
             this.stopGhostUser();
+
+            // Check for time-linked bonus (30+ seconds)
+            if (this.linkTime) {
+                const elapsed = (Date.now() - this.linkTime) / 1000;
+                if (elapsed >= 30) {
+                    progressTracker.addPoints(this.moduleIndex, 15);
+                    console.log('Link duration bonus awarded! +15 points');
+                }
+                this.linkTime = null;
+            }
         }
     }
 
@@ -95,6 +115,12 @@ export class Entanglement {
 
         this.gridA[index] = newState;
         this.updateTile(this.tilesA[index], newState, true);
+
+        // Award 1 point per tile click
+        const result = progressTracker.addPoints(this.moduleIndex, 1);
+        if (result.completed) {
+            console.log('Entanglement completed! Module 4 unlocked.');
+        }
 
         // If linked, mirror on Grid B with delay
         if (this.isLinked) {

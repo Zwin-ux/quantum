@@ -309,3 +309,26 @@ body::after {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--orange);
 }
+
+/* Gallery Styles */
+.signal-card {
+    background: rgba(0, 255, 255, 0.02);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.signal-card:hover {
+    background: rgba(0, 255, 255, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
+}
+
+.mini-grid {
+    margin-bottom: 0.5rem;
+}
+
+#gallery-grid {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 1rem;
+}

@@ -1,0 +1,13 @@
+{
+  "name": "quantum-signals",
+  "version": "1.0.0",
+  "description": "Interactive quantum computing visualization",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": ["quantum", "visualization", "interactive"],
+  "author": "",
+  "license": "MIT"
+}

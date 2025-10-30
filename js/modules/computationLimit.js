@@ -1,5 +1,7 @@
 // Module 4: Computation Limit - Cellular Automata Performance Degradation
 
+import { progressTracker } from '../utils/progressTracker.js';
+
 export class ComputationLimit {
     constructor() {
         this.canvas = document.getElementById('automata-canvas');
@@ -23,6 +25,11 @@ export class ComputationLimit {
 
         this.complexity = 0;
         this.maxComplexity = 100;
+
+        // Point tracking
+        this.moduleIndex = 4;
+        this.pointsInterval = null;
+        this.bonusAwarded = false;
     }
 
     init() {
@@ -197,6 +204,24 @@ export class ComputationLimit {
 
         // Update FPS display
         this.fpsUpdateInterval = setInterval(() => this.updateFPS(), 100);
+
+        // Award 1 point every 3 seconds
+        this.pointsInterval = setInterval(() => {
+            if (this.isActive) {
+                const result = progressTracker.addPoints(this.moduleIndex, 1);
+
+                // Check for complexity bonus (reaching 80%+)
+                if (!this.bonusAwarded && this.complexity >= 80) {
+                    progressTracker.addPoints(this.moduleIndex, 10);
+                    this.bonusAwarded = true;
+                    console.log('Complexity bonus awarded! +10 points');
+                }
+
+                if (result.completed) {
+                    console.log('Computation Limit completed! Module 5 unlocked.');
+                }
+            }
+        }, 3000);
     }
 
     stop() {
@@ -208,6 +233,11 @@ export class ComputationLimit {
 
         if (this.fpsUpdateInterval) {
             clearInterval(this.fpsUpdateInterval);
+        }
+
+        if (this.pointsInterval) {
+            clearInterval(this.pointsInterval);
+            this.pointsInterval = null;
         }
     }
 

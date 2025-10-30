@@ -1,5 +1,7 @@
 // Module 0: Noise Floor - Landing Scene
 
+import { progressTracker } from '../utils/progressTracker.js';
+
 export class NoiseFloor {
     constructor() {
         this.canvas = document.getElementById('noise-canvas');
@@ -8,7 +10,7 @@ export class NoiseFloor {
         this.typewriterContainer = document.getElementById('typewriter-container');
         this.typewriterText = document.getElementById('typewriter-text');
 
-        this.message = "All information has a cost. Let's measure it.";
+        this.message = "Information has a cost.";
         this.charIndex = 0;
         this.isActive = false;
 
@@ -17,6 +19,10 @@ export class NoiseFloor {
         this.mousePos = { x: 0.5, y: 0.5 };
         this.time = 0;
         this.animationFrame = null;
+
+        // Point tracking
+        this.pointsInterval = null;
+        this.moduleIndex = 0;
     }
 
     init() {
@@ -115,6 +121,21 @@ export class NoiseFloor {
 
         // Start rendering
         this.render();
+
+        // Start point tracking (1 point per second)
+        this.startPointTracking();
+    }
+
+    startPointTracking() {
+        // Award 1 point every second for watching
+        this.pointsInterval = setInterval(() => {
+            if (this.isActive) {
+                const result = progressTracker.addPoints(this.moduleIndex, 1);
+                if (result.completed) {
+                    console.log('Noise Floor completed! Module 1 unlocked.');
+                }
+            }
+        }, 1000);
     }
 
     startTypewriter() {
@@ -258,6 +279,10 @@ export class NoiseFloor {
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
         }
+        if (this.pointsInterval) {
+            clearInterval(this.pointsInterval);
+            this.pointsInterval = null;
+        }
     }
 
     reset() {
@@ -269,5 +294,11 @@ export class NoiseFloor {
         this.typewriterContainer.classList.remove('fade-in');
         this.time = 0;
         this.createParticles();
+
+        // Clear points interval
+        if (this.pointsInterval) {
+            clearInterval(this.pointsInterval);
+            this.pointsInterval = null;
+        }
     }
 }
